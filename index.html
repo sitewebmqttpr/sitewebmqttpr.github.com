@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <script src="vendor/jquery.min.js" type="text/javascript"></script>
+    <script src="vendor/mqttws31.js" type="text/javascript"></script>
+    <script src="vendor/tween-min.js" type="text/javascript"></script>
+    <script src="vendor/steelseries-min.js" type="text/javascript"></script>
+    <title>Temp</title>
+    <script type="text/javascript">
+	var tempGauge; //variable pour la temp
+	var pressGauge; //variable pour la pression
+	var hygroGauge; //variable pour l'hygrometrie
+	
+	
+	//var client = new Messaging.Client("localhost", 10001, 
+	//var client = new Messaging.Client("test.mosquitto.org", 8080,
+		//var client = new Messaging.Client("8bc958ad:657b04f2bf12101e@broker.shiftr.io", 80,
+		//var client = new Messaging.Client("298279d3:6f489b45627c8239@broker.shiftr.io", 80,
+	
+		
+		// client pour la température//
+		var client_temp = new Messaging.Client("840c89a6:Covid-19-STS-Sn-Ir-RdG@broker.shiftr.io", 443,
+				"myclientid_" + parseInt(Math.random() * 100, 10));
+				
+	client_temp.onConnectionLost = function (responseObject) {
+		alert("connection lost: " + responseObject.errorMessage);
+		tempGauge.setLedColor(steelseries.LedColor.RED_LED); //change status LED to RED on broker disconnection 
+	};
+
+	client_temp.onMessageArrived = function (message) {
+		tempGauge.setValue(message.payloadString);
+	};
+
+	var options_temp = {
+		useSSL : true,
+		timeout: 10, 
+		userName:"840c89a6",
+		password:"Covid-19-STS-Sn-Ir-RdG",
+		
+		
+		onSuccess: function () {
+			// alert("Connected");
+			// Connection succeeded; subscribe to our topic
+			//client.subscribe('temp/random', {qos: 0});
+			//client.subscribe('rom/temp_bts', {qos: 0});
+			client_temp.subscribe('BrassensRdg/DHT22JLC/Temperature', {qos: 0});
+			tempGauge.setLedColor(steelseries.LedColor.GREEN_LED); //change status LED to GREEN on broker connection
+
+		},
+		onFailure: function (message) {
+			alert("Connection failed: " + message.errorMessage);
+			tempGauge.setLedColor(steelseries.LedColor.RED_LED); //change status LED to RED on broker disconnection 
+
+		}
+	};
+	
+	// client pour la pression//
+	var client_press = new Messaging.Client("840c89a6:Covid-19-STS-Sn-Ir-RdG@broker.shiftr.io", 443,
+	
+				"myclientid_" + parseInt(Math.random() * 100, 10));
+
+	client_press.onConnectionLost = function (responseObject) {
+		alert("connection lost: " + responseObject.errorMessage);
+		pressGauge.setLedColor(steelseries.LedColor.RED_LED); //change status LED to RED on broker disconnection 
+	};
+	client_press.onMessageArrived = function (message) {
+		pressGauge.setValue(message.payloadString);
+	};
+	var options_press = {
+		useSSl : true,
+		timeout: 10,
+		userName:"840c89a6",
+		password:"Covid-19-STS-Sn-Ir-RdG",
+		onSuccess: function () {
+			// alert("Connected");
+			// Connection succeeded; subscribe to our topic
+			client_press.subscribe('BrassensRdg/DHT22JLC/Pression', {qos: 0});			
+			pressGauge.setLedColor(steelseries.LedColor.GREEN_LED); //change status LED to GREEN on broker connection
+		},
+		onFailure: function (message) {
+			alert("Connection failed: " + message.errorMessage);
+			pressGauge.setLedColor(steelseries.LedColor.RED_LED); //change status LED to RED on broker disconnection 
+		}
+	};
+	
+	// client pour l'hygrometrie//
+		var client_hygro = new Messaging.Client("840c89a6:Covid-19-STS-Sn-Ir-RdG@broker.shiftr.io", 443,
+	
+				"myclientid_" + parseInt(Math.random() * 100, 10));
+
+	client_hygro.onConnectionLost = function (responseObject) {
+		alert("connection lost: " + responseObject.errorMessage);
+		hygroGauge.setLedColor(steelseries.LedColor.RED_LED); //change status LED to RED on broker disconnection 
+	};
+	client_hygro.onMessageArrived = function (message) {
+		hygroGauge.setValue(message.payloadString); 
+	};
+	var options_hygro = {
+		useSSL : true,
+		timeout: 10,
+		userName:"840c89a6",
+		password:"Covid-19-STS-Sn-Ir-RdG",
+		onSuccess: function () {
+			// alert("Connected");
+			// Connection succeeded; subscribe to our topic
+			client_hygro.subscribe('BrassensRdg/DHT22JLC/Hygrometrie', {qos: 0});			
+			hygroGauge.setLedColor(steelseries.LedColor.GREEN_LED); //change status LED to GREEN on broker connection
+		},
+		onFailure: function (message) {
+			alert("Connection failed: " + message.errorMessage);
+			hygroGauge.setLedColor(steelseries.LedColor.RED_LED); //change status LED to RED on broker disconnection 
+		}
+	};
+
+	function init() {
+	    // by @jpmens, Sep 2013
+	    // from @bordignons Sep 2013
+	    // original idea.. http://www.desert-home.com/2013/06/how-to-use-steelseries-gauges-with.html
+	    // with help.. http://harmoniccode.blogspot.com.au/
+	    // and code.. https://github.com/HanSolo/SteelSeries-Canvas
+
+
+		//tempGauge
+		tempGauge = new steelseries.Radial('gauge_temp', {
+			gaugeType: steelseries.GaugeType.TYPE3,
+			minValue:-30,
+			maxValue:50,
+			size: 400,
+			frameDesign: steelseries.FrameDesign.STEEL,
+			knobStyle: steelseries.KnobStyle.STEEL,
+			pointerType: steelseries.PointerType.TYPE1,
+			lcdDecimals: 0,
+			section: null,
+			area: null,
+			titleString: 'Temperature',
+			unitString: 'Degres Celsius',
+			threshold: 20,
+			lcdVisible: true,
+			lcdDecimals: 2
+		   });
+		tempGauge.setValue(''); //gives a blank display 'NaN' until broker has connected
+		tempGauge.setLedColor(steelseries.LedColor.RED_LED); //set the LED RED until connected
+
+		//pressGauge
+		pressGauge = new steelseries.Radial('gauge_press', {
+			gaugeType: steelseries.GaugeType.TYPE2, 
+			minValue:970,
+			maxValue:1050,
+			size: 400,
+			frameDesign: steelseries.FrameDesign.GOLD,
+			knobStyle: steelseries.KnobStyle.GOLD,
+			pointerType: steelseries.PointerType.TYPE8,
+			lcdDecimals: 0,
+			section: null,
+			area: null,
+			titleString: 'Pression',
+			unitString: 'hPa',
+			threshold: 1013,
+			lcdVisible: true,
+			lcdDecimals: 2
+		   });
+		pressGauge.setValue(''); //gives a blank display 'NaN' until broker has connected
+		pressGauge.setLedColor(steelseries.LedColor.RED_LED); //set the LED RED until connected 
+		
+		//hygroGauge
+		hygroGauge = new steelseries.Radial('gauge_hygro', {
+			gaugeType: steelseries.GaugeType.TYPE1,
+			minValue:0,
+			maxValue:100,
+			size: 400,
+			frameDesign: steelseries.FrameDesign.STEEL,
+			knobStyle: steelseries.KnobStyle.STEEL,
+			pointerType: steelseries.PointerType.TYPE9,
+			lcdDecimals: 0,
+			section: null,
+			area: null,
+			titleString: 'Hygrometrie', 
+			unitString: '%',  
+			threshold: 40,
+			lcdVisible: true,
+			lcdDecimals: 2
+		   });
+		hygroGauge.setValue(''); //gives a blank display 'NaN' until broker has connected
+		hygroGauge.setLedColor(steelseries.LedColor.RED_LED); //set the LED RED until connected
+		
+		/* Connect to MQTT broker */
+		client_temp.connect(options_temp);
+		client_press.connect(options_press);
+		client_hygro.connect(options_hygro); 
+		
+	}
+
+
+    </script>
+  </head>
+  <body onload="init();">
+       <div>
+       <canvas id=gauge_temp width=200 height=200>No canvas in your browser...sorry...</canvas>
+	   <canvas id=gauge_press width=200 height=200>No canvas in your browser...sorry...</canvas>
+	   <canvas id=gauge_hygro width=200 height=200>No canvas in your browser...sorry...</canvas>
+       </div>
+  </body>
+</html>
