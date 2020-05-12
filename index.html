@@ -21,7 +21,7 @@
 	
 		
 		// client pour la température//
-		var client_temp = new Messaging.Client("840c89a6:Covid-19-STS-Sn-Ir-RdG@broker.shiftr.io", 80,
+		var client_temp = new Messaging.Client("840c89a6:Covid-19-STS-Sn-Ir-RdG@broker.shiftr.io", 443,
 				"myclientid_" + parseInt(Math.random() * 100, 10));
 				
 	client_temp.onConnectionLost = function (responseObject) {
@@ -34,9 +34,11 @@
 	};
 
 	var options_temp = {
+		useSSL : true,
 		timeout: 10, 
 		userName:"840c89a6",
 		password:"Covid-19-STS-Sn-Ir-RdG",
+		
 		
 		onSuccess: function () {
 			// alert("Connected");
@@ -55,7 +57,7 @@
 	};
 	
 	// client pour la pression//
-	var client_press = new Messaging.Client("840c89a6:Covid-19-STS-Sn-Ir-RdG@broker.shiftr.io", 80,
+	var client_press = new Messaging.Client("840c89a6:Covid-19-STS-Sn-Ir-RdG@broker.shiftr.io", 443,
 	
 				"myclientid_" + parseInt(Math.random() * 100, 10));
 
@@ -67,6 +69,7 @@
 		pressGauge.setValue(message.payloadString);
 	};
 	var options_press = {
+		useSSl : true,
 		timeout: 10,
 		userName:"840c89a6",
 		password:"Covid-19-STS-Sn-Ir-RdG",
@@ -83,7 +86,7 @@
 	};
 	
 	// client pour l'hygrometrie//
-		var client_hygro = new Messaging.Client("840c89a6:Covid-19-STS-Sn-Ir-RdG@broker.shiftr.io", 80,
+		var client_hygro = new Messaging.Client("840c89a6:Covid-19-STS-Sn-Ir-RdG@broker.shiftr.io", 443,
 	
 				"myclientid_" + parseInt(Math.random() * 100, 10));
 
@@ -95,6 +98,7 @@
 		hygroGauge.setValue(message.payloadString); 
 	};
 	var options_hygro = {
+		useSSL : true,
 		timeout: 10,
 		userName:"840c89a6",
 		password:"Covid-19-STS-Sn-Ir-RdG",
